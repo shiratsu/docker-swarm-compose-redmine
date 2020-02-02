@@ -1,0 +1,42 @@
+version: '3.7'
+services:
+  redmine:
+    image: redmine
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: ingress
+    environment:
+      - REDMINE_DB_MYSQL=db
+      - REDMINE_DB_PASSWORD=example
+    depends_on:
+      - db
+    restart: always
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+  db:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_DATABASE=redmine
+    restart: always
+    ports:
+      - target: 3306
+        published: 3306
+        protocol: tcp
+        mode: ingress
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+
+  logger:
+    image: fluent/fluentd
+    deploy:
+      mode: global
+    restart: always
+    
